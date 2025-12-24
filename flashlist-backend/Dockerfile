@@ -1,6 +1,9 @@
 # 后端 Dockerfile
 FROM node:20-alpine AS builder
 
+# 安装 OpenSSL 和其他必要的依赖
+RUN apk add --no-cache openssl libc6-compat
+
 # 设置工作目录
 WORKDIR /app
 
@@ -21,6 +24,9 @@ RUN npm run build
 
 # 生产阶段
 FROM node:20-alpine
+
+# 安装运行时需要的 OpenSSL
+RUN apk add --no-cache openssl libc6-compat
 
 WORKDIR /app
 
