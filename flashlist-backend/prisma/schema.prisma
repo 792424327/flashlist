@@ -1,0 +1,65 @@
+// Prisma Schema for FlashList
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 用户表
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    BigInt   @map("created_at")
+  updatedAt    BigInt   @map("updated_at")
+  lastLoginAt  BigInt?  @map("last_login_at")
+
+  // 关联关系
+  items FlashListItem[]
+
+  @@map("users")
+}
+
+// 待办事项表
+model FlashListItem {
+  id         String  @id @default(uuid())
+  userId     String  @map("user_id")
+  text       String  @default("")
+  completed  Boolean @default(false)
+  level      Int     @default(0)
+  type       String  @default("task") // "task" or "header"
+  orderIndex Float   @map("order_index")
+  createdAt  BigInt  @map("created_at")
+  updatedAt  BigInt  @map("updated_at")
+  deletedAt  BigInt? @map("deleted_at")
+
+  // 关联关系
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, orderIndex])
+  @@index([userId, type])
+  @@index([deletedAt])
+  @@map("flash_list_items")
+}
+
+// 会话表（可选）
+model Session {
+  id             String @id @default(uuid())
+  userId         String @map("user_id")
+  token          String @unique
+  refreshToken   String? @map("refresh_token")
+  expiresAt      BigInt @map("expires_at")
+  createdAt      BigInt @map("created_at")
+  lastActivityAt BigInt @map("last_activity_at")
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}

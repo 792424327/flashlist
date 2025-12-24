@@ -1,0 +1,5 @@
+{
+  "name": "FlashList - 极简大纲清单",
+  "description": "一个追求极致效率的结构化大纲笔记式待办清单，支持拖拽排序、快速录入和多级缩进。",
+  "requestFramePermissions": []
+}

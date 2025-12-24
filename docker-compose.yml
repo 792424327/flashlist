@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # 后端服务
+  backend:
+    build:
+      context: ./flashlist-backend
+      dockerfile: Dockerfile
+    container_name: flashlist-backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=file:/app/data/prod.db
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost}
+    volumes:
+      # 持久化数据库文件
+      - ./data:/app/data
+      # 如果需要查看日志
+      - ./logs/backend:/app/logs
+    networks:
+      - flashlist-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 前端服务
+  frontend:
+    build:
+      context: ./flashlist---极简大纲清单_前端
+      dockerfile: Dockerfile
+    container_name: flashlist-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"  # HTTPS端口（需要配置SSL证书）
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - flashlist-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  flashlist-network:
+    driver: bridge
+
+volumes:
+  data:
+    driver: local
