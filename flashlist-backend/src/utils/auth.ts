@@ -2,11 +2,11 @@
  * 认证工具函数
  */
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { User } from '../types/index.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_SECRET: string = process.env.JWT_SECRET || 'default-secret-key';
+const JWT_EXPIRES_IN: string | number = process.env.JWT_EXPIRES_IN || '7d';
 
 /**
  * 哈希密码
@@ -26,7 +26,7 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
  * 生成JWT Token
  */
 export function generateToken(userId: string): string {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
 }
 
 /**
@@ -44,7 +44,8 @@ export function verifyToken(token: string): { userId: string } {
  * 计算token过期时间
  */
 export function getTokenExpiry(): number {
-  const days = parseInt(JWT_EXPIRES_IN) || 7;
+  const expiresIn = String(JWT_EXPIRES_IN);
+  const days = parseInt(expiresIn) || 7;
   return Date.now() + days * 24 * 60 * 60 * 1000;
 }
 
