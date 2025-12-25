@@ -29,7 +29,7 @@ import { AuthPage } from './components/AuthPage';
 import { Plus, Command, Cloud, Settings, Search, Heading, LogOut } from 'lucide-react';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3001/api/v1';
+const API_BASE_URL = '/api/v1';
 
 // 创建axios实例
 const apiClient = axios.create({
