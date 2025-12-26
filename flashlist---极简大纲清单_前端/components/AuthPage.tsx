@@ -8,7 +8,7 @@ interface AuthPageProps {
   onLoginSuccess: (token: string, user: any) => void;
 }
 
-const API_BASE_URL = 'http://localhost:3001/api/v1';
+const API_BASE_URL = '/api/v1';
 
 export const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
