@@ -90,6 +90,13 @@ export default function App() {
     }
   }, [isAuthenticated]);
 
+  // 组件卸载时清除所有防抖定时器
+  useEffect(() => {
+    return () => {
+      Object.values(updateTimersRef.current).forEach(timer => clearTimeout(timer));
+    };
+  }, []);
+
   const loadItems = async () => {
     try {
       setLoading(true);
@@ -174,17 +181,38 @@ export default function App() {
     setActiveId(null);
   };
 
+  // 防抖定时器
+  const updateTimersRef = useRef<{ [key: string]: NodeJS.Timeout }>({});
+
   const updateItem = useCallback(async (id: string, updates: Partial<FlashListItem>) => {
-    // 乐观更新UI
+    // 乐观更新UI（立即更新界面）
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...updates } : item)));
 
-    // 调用API
-    try {
-      await apiClient.patch(`/items/${id}`, updates);
-    } catch (error) {
-      console.error('更新失败:', error);
-      // 失败时重新加载数据
-      loadItems();
+    // 如果是文本更新，使用防抖
+    if ('text' in updates) {
+      // 清除之前的定时器
+      if (updateTimersRef.current[id]) {
+        clearTimeout(updateTimersRef.current[id]);
+      }
+
+      // 设置新的定时器，800ms 后才发送请求
+      updateTimersRef.current[id] = setTimeout(async () => {
+        try {
+          await apiClient.patch(`/items/${id}`, updates);
+          delete updateTimersRef.current[id];
+        } catch (error) {
+          console.error('更新失败:', error);
+          loadItems();
+        }
+      }, 800);
+    } else {
+      // 其他更新（如完成状态、类型等）立即发送
+      try {
+        await apiClient.patch(`/items/${id}`, updates);
+      } catch (error) {
+        console.error('更新失败:', error);
+        loadItems();
+      }
     }
   }, []);
 
