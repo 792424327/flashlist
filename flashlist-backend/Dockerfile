@@ -39,11 +39,14 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/prisma ./prisma
 
+# 安装 tsx 用于运行 seed 脚本
+RUN npm install -g tsx
+
 # 创建数据库目录
 RUN mkdir -p /app/data
 
 # 暴露端口
 EXPOSE 3001
 
-# 启动命令
-CMD ["sh", "-c", "npx prisma db push && node dist/index.js"]
+# 启动命令：初始化数据库 -> 运行 seed -> 启动服务器
+CMD ["sh", "-c", "npx prisma db push && npx tsx prisma/seed.ts && node dist/index.js"]
